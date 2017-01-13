@@ -1,0 +1,135 @@
+# JOE syntax file for Twig
+
+=Idle
+=Keyword       bold
+=Bracket       magenta
+=Char          blue
+=String        cyan
+=TagEdge       green
+=TagName       fg_22 # dark green
+=SGMLtag       fg_222 # grey
+
+:idle Idle
+      *        idle
+      "<"      idle call=.tagnames() recolor=-1
+      "/"      tag_maybe_end
+      ">"      tag_end recolor=-1
+      "{}"     brace recolor=-1
+      "()"     brace recolor=-1
+      "%"      command recolor=-1
+      "\""     idle call=.string_quoted(dquote) recolor=-1
+      "'"      idle call=.string_quoted(squote) recolor=-1
+      "a-z"    ident  buffer
+
+:tag_end TagEdge
+      *        idle noeat
+
+:command Char
+      *        idle noeat
+
+:brace Bracket
+      *        idle noeat
+
+:kw Keyword
+      *        idle noeat
+
+# twig keywords (likely incomplete)
+:ident Idle
+      *              idle noeat strings
+      "block"        kw
+      "debug"        kw
+      "do"           kw
+      "else"         kw
+      "embed"        kw
+      "endblock"     kw
+      "endembed"     kw
+      "endfilter"    kw
+      "endfor"       kw
+      "endif"        kw
+      "endmacro"     kw
+      "endsandbox"   kw
+      "endspaceless" kw
+      "extends"      kw
+      "filter"       kw
+      "flush"        kw
+      "for"          kw
+      "from"         kw
+      "if"           kw
+      "import"       kw
+      "include"      kw
+      "macro"        kw
+      "sandbox"      kw
+      "set"          kw
+      "spaceless"    kw
+      "with"         kw
+done
+      "a-z"          ident
+
+# quoted stuff subroutine
+.subr string_quoted
+
+.ifdef dquote
+:string String
+      *        string
+      "\""     idle return
+      "{"      twig_start recolor=-1
+:twig_start Bracket
+      *        inline_twig
+:inline_twig Idle
+      *        inline_twig
+      "\""     string noeat
+      "}"      twig_end recolor=-1
+:twig_end Bracket
+      *        string
+.endif
+
+.ifdef squote
+:string Char
+      *        string
+      "'"      idle return
+      "{"      twig_start recolor=-1
+:twig_start Bracket
+      *        inline_twig
+:inline_twig Idle
+      *        inline_twig
+      "\""     string noeat
+      "}"      twig_end recolor=-1
+:twig_end Bracket
+      *        string
+.endif
+
+.end
+
+
+# html tags
+:tag_maybe_end TagEdge
+      *        idle noeat
+      ">"      tag_end recolor=-2
+
+.subr tagnames
+:tag_begin TagEdge
+      *        idle noeat return
+      "/"      tag_begin
+      "a-zA-Z" tag_name noeat
+      "!"      idle call=.sgml() recolor=-2
+:tag_name TagName
+      *        idle noeat return
+      "a-zA-Z" tag_name
+.end
+
+# sgml and comments
+.subr sgml
+:sgml_tag SGMLtag
+      *        sgml_tag
+      "-"      sgml_tag_maybe_comment
+      ">"      idle return
+:sgml_tag_maybe_comment SGMLtag
+      *        sgml_tag
+      "-"      sgml_tag_comment
+:sgml_tag_comment SGMLtag
+      *        sgml_tag_comment
+      "-"      sgml_tag_maybe_comment_end
+:sgml_tag_maybe_comment_end SGMLtag
+      *        sgml_tag_comment
+      "-"      sgml_tag
+.end
