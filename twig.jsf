@@ -1,4 +1,6 @@
 # JOE syntax file for Twig
+# Copyright 2017 indigoxela
+# https://github.com/indigoxela/joe-syntax
 
 =Idle
 =Keyword       bold
